@@ -14,7 +14,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import credentials.Credentials;
+import java.util.Set;
 import org.json.simple.*;
+
 /**
  *
  * @author Swar
@@ -41,18 +43,17 @@ public class products extends HttpServlet {
                 pstmt.setString(i, params[i - 1]);
             }
             ResultSet rs = pstmt.executeQuery();
-            
+
             while (rs.next()) {
-                JSONObject tmpjson = new JSONObject();
-                if(!sb.toString().equals("[ ")){
+                if (!sb.toString().equals("[ ")) {
                     sb.append(",\n");
                 }
-                json.put("quantity", rs.getInt("quantity"));
                 json.put("productId", rs.getInt("productId"));
                 json.put("name", rs.getString("name"));
                 json.put("description", rs.getString("description"));
-                
+                json.put("quantity", rs.getInt("quantity"));
                 sb.append(json.toJSONString());
+                json.clear();
             }
         } catch (SQLException ex) {
             Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,7 +73,7 @@ public class products extends HttpServlet {
             } else {
                 int id = Integer.parseInt(request.getParameter("id"));
                 out.println(getResults("SELECT * FROM PRODUCT WHERE productId = ?", String.valueOf(id)));
-                
+
             }
         } catch (IOException ex) {
             Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,7 +91,52 @@ public class products extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+        Set<String> keySet = request.getParameterMap().keySet();
+        try (PrintWriter out = response.getWriter()) {
+            if (keySet.contains("id") && keySet.contains("name") && keySet.contains("description") && keySet.contains("quantity")) {
+                String id = request.getParameter("id");
+                String name = request.getParameter("name");
+                String description = request.getParameter("description");
+                String quantity = request.getParameter("quantity");
+                doUpdate("INSERT INTO PRODUCT (productId, name, description, quantity) VALUES (?, ?, ?, ?)", id, name, description, quantity);
+            } else {
+                out.println("Not enough data to input");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private int doUpdate(String query, String... params) {
+        int changes = 0;
+        try (Connection cn = Credentials.getConnection()) {
+            PreparedStatement pstmt = cn.prepareStatement(query);
+            for (int i = 1; i <= params.length; i++) {
+                pstmt.setString(i, params[i - 1]);
+            }
+            changes = pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return changes;
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) {
+        Set<String> keySet = request.getParameterMap().keySet();
+        try (PrintWriter out = response.getWriter()) {
+            if (keySet.contains("id")){
+                String id = request.getParameter("id");
+                String name = request.getParameter("name");
+                String description = request.getParameter("description");
+                String quantity = request.getParameter("quantity");
+                doUpdate("UPDATE PRODUCT SET productId = ?, name = ?, description = ?, quantity = ? WHERE productId = ?", id, name, description, quantity, id);
+            } else {
+                out.println("Not enough data to input from put asdsa"+keySet.toString());
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
