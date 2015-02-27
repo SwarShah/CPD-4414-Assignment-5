@@ -73,7 +73,6 @@ public class products extends HttpServlet {
             } else {
                 int id = Integer.parseInt(request.getParameter("id"));
                 out.println(getResults("SELECT * FROM PRODUCT WHERE productId = ?", String.valueOf(id)));
-
             }
         } catch (IOException ex) {
             Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
@@ -100,7 +99,7 @@ public class products extends HttpServlet {
                 String quantity = request.getParameter("quantity");
                 doUpdate("INSERT INTO PRODUCT (productId, name, description, quantity) VALUES (?, ?, ?, ?)", id, name, description, quantity);
             } else {
-                out.println("Not enough data to input");
+                out.println("Not enough arguments to peform this action");
             }
         } catch (IOException ex) {
             Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
@@ -125,18 +124,34 @@ public class products extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) {
         Set<String> keySet = request.getParameterMap().keySet();
         try (PrintWriter out = response.getWriter()) {
-            if (keySet.contains("id")){
+            if (keySet.contains("id")) {
                 String id = request.getParameter("id");
                 String name = request.getParameter("name");
                 String description = request.getParameter("description");
                 String quantity = request.getParameter("quantity");
                 doUpdate("UPDATE PRODUCT SET productId = ?, name = ?, description = ?, quantity = ? WHERE productId = ?", id, name, description, quantity, id);
             } else {
-                out.println("Not enough data to input from put asdsa"+keySet.toString());
+                out.println("Not enough arguments to peform this action");
             }
         } catch (IOException ex) {
             Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Set<String> keySet = request.getParameterMap().keySet();
+        try (PrintWriter out = response.getWriter()) {
+            if (keySet.contains("id")) {
+                String id = request.getParameter("id");
+                doUpdate("DELETE FROM PRODUCT WHERE productId = ?", id);
+            } else {
+                out.println("Not enough arguments to peform this action");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
 
     /**
