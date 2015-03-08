@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -68,6 +69,13 @@ public class products {
         String description = json.getString("description");
         String qty = String.valueOf(json.getInt("quantity"));
         doUpdate("UPDATE PRODUCT SET productId= ?, name = ?, description = ?, quantity = ? WHERE productId = ?", id1, name, description, qty, id1);
+    }
+    
+    @DELETE
+    @Path("{id}")
+    @Consumes("application/json")
+    public void delete(@PathParam("id") String id) {
+        doUpdate("DELETE FROM PRODUCT WHERE productId = ?", id);
     }
     
     public int doUpdate(String query, String... params) {
