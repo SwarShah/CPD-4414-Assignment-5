@@ -13,25 +13,29 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import org.json.simple.*;
 
 /**
  *
  * @author Swar
  */
-@Path("/products")
+@Path("products")
 public class products {
 
     @GET
     @Produces("application/json")
-    public String getAll(@QueryParam("id") String id) {
-        if (id == null) {
-            return (getResults("SELECT * FROM PRODUCT"));
-        } else {
-            return (getResults("SELECT * FROM PRODUCT WHERE productId = ?", id));
-        }
+    public String getAll() {
+        return (getResults("SELECT * FROM PRODUCT"));
+        //    return (getResults("SELECT * FROM PRODUCT WHERE productId = ?", id));
+    }
+    
+    @GET
+    @Path("{id}")
+    @Produces("application/json")
+    public String get(@PathParam("id") int id) {
+       return (getResults("SELECT * FROM PRODUCT WHERE productId = ?", String.valueOf(id)));
     }
 
     private String getResults(String query, String... params) {
@@ -70,6 +74,5 @@ public class products {
         }
         return jArray.toJSONString();
     }
-
 
 }
