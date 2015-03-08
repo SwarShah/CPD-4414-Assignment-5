@@ -6,15 +6,20 @@ package mypackage;
  * and open the template in the editor.
  */
 import credentials.Credentials;
+import java.io.StringReader;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.json.simple.*;
 
 /**
@@ -30,12 +35,40 @@ public class products {
         return (getResults("SELECT * FROM PRODUCT"));
         //    return (getResults("SELECT * FROM PRODUCT WHERE productId = ?", id));
     }
-    
+
     @GET
     @Path("{id}")
     @Produces("application/json")
     public String get(@PathParam("id") int id) {
-       return (getResults("SELECT * FROM PRODUCT WHERE productId = ?", String.valueOf(id)));
+        return (getResults("SELECT * FROM PRODUCT WHERE productId = ?", String.valueOf(id)));
+    }
+
+    @POST
+    @Consumes("application/json")
+    public Response post(String str) {
+        JsonObject json = Json.createReader(new StringReader(str)).readObject();
+        String id = String.valueOf(json.getInt("productId"));
+        String name = json.getString("name");
+        String description = json.getString("description");
+        String qty = String.valueOf(json.getInt("quantity"));
+        doUpdate("INSERT INTO PRODUCT (productId, name, description, quantity) VALUES (?, ?, ?, ?)", id, name, description, qty);
+        return Response.ok("http://localhost:8080/CPD-4414-Assignment-4/products/"+
+                        id,
+                        MediaType.TEXT_HTML).build(); 
+    }
+
+    public int doUpdate(String query, String... params) {
+        int changes = 0;
+        try (Connection cn = Credentials.getConnection()) {
+            PreparedStatement pstmt = cn.prepareStatement(query);
+            for (int i = 1; i <= params.length; i++) {
+                pstmt.setString(i, params[i - 1]);
+            }
+            changes = pstmt.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return changes;
     }
 
     private String getResults(String query, String... params) {
