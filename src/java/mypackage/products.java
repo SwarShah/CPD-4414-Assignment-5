@@ -15,6 +15,7 @@ import javax.json.JsonObject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -56,7 +57,19 @@ public class products {
                         id,
                         MediaType.TEXT_HTML).build(); 
     }
-
+    
+    @PUT
+    @Path("{id}")
+    @Consumes("application/json")
+    public void putData(String str, @PathParam("id") int id){
+        JsonObject json = Json.createReader(new StringReader(str)).readObject();
+        String id1 = String.valueOf(id);
+        String name = json.getString("name");
+        String description = json.getString("description");
+        String qty = String.valueOf(json.getInt("quantity"));
+        doUpdate("UPDATE PRODUCT SET productId= ?, name = ?, description = ?, quantity = ? WHERE productId = ?", id1, name, description, qty, id1);
+    }
+    
     public int doUpdate(String query, String... params) {
         int changes = 0;
         try (Connection cn = Credentials.getConnection()) {
