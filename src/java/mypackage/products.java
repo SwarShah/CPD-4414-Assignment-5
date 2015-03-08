@@ -35,7 +35,6 @@ public class products {
     @Produces("application/json")
     public String getAll() {
         return (getResults("SELECT * FROM PRODUCT"));
-        //    return (getResults("SELECT * FROM PRODUCT WHERE productId = ?", id));
     }
 
     @GET
@@ -53,44 +52,46 @@ public class products {
         String name = json.getString("name");
         String description = json.getString("description");
         String qty = String.valueOf(json.getInt("quantity"));
-        doUpdate("INSERT INTO PRODUCT (productId, name, description, quantity) VALUES (?, ?, ?, ?)", id, name, description, qty);
-        return Response.ok("http://localhost:8080/CPD-4414-Assignment-4/products/"+
-                        id,
-                        MediaType.TEXT_HTML).build(); 
+        int status = doUpdate("INSERT INTO PRODUCT (productId, name, description, quantity) VALUES (?, ?, ?, ?)", id, name, description, qty);
+        if (status == 0) {
+            return Response.status(500).build();
+        } else {
+            return Response.ok("http://localhost:8080/CPD-4414-Assignment-4/products/"
+                    + id,
+                    MediaType.TEXT_HTML).build();
+        }
     }
-    
+
     @PUT
     @Path("{id}")
     @Consumes("application/json")
-    public Response putData(String str, @PathParam("id") int id){
+    public Response putData(String str, @PathParam("id") int id) {
         JsonObject json = Json.createReader(new StringReader(str)).readObject();
         String id1 = String.valueOf(id);
         String name = json.getString("name");
         String description = json.getString("description");
         String qty = String.valueOf(json.getInt("quantity"));
         int status = doUpdate("UPDATE PRODUCT SET productId= ?, name = ?, description = ?, quantity = ? WHERE productId = ?", id1, name, description, qty, id1);
-        if(status==0){
+        if (status == 0) {
             return Response.status(500).build();
-        }
-        else{
-            return Response.ok("http://localhost:8080/CPD-4414-Assignment-4/products/"+
-                        id,
-                        MediaType.TEXT_HTML).build(); 
+        } else {
+            return Response.ok("http://localhost:8080/CPD-4414-Assignment-4/products/"
+                    + id,
+                    MediaType.TEXT_HTML).build();
         }
     }
-    
+
     @DELETE
     @Path("{id}")
     @Consumes("application/json")
     public Response delete(@PathParam("id") String id) {
-        if(doUpdate("DELETE FROM PRODUCT WHERE productId = ?", id)==0){
+        if (doUpdate("DELETE FROM PRODUCT WHERE productId = ?", id) == 0) {
             return Response.status(500).build();
-        }
-        else{
+        } else {
             return Response.ok().build();
         }
     }
-    
+
     public int doUpdate(String query, String... params) {
         int changes = 0;
         try (Connection cn = Credentials.getConnection()) {
