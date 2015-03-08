@@ -62,13 +62,21 @@ public class products {
     @PUT
     @Path("{id}")
     @Consumes("application/json")
-    public void putData(String str, @PathParam("id") int id){
+    public Response putData(String str, @PathParam("id") int id){
         JsonObject json = Json.createReader(new StringReader(str)).readObject();
         String id1 = String.valueOf(id);
         String name = json.getString("name");
         String description = json.getString("description");
         String qty = String.valueOf(json.getInt("quantity"));
-        doUpdate("UPDATE PRODUCT SET productId= ?, name = ?, description = ?, quantity = ? WHERE productId = ?", id1, name, description, qty, id1);
+        int status = doUpdate("UPDATE PRODUCT SET productId= ?, name = ?, description = ?, quantity = ? WHERE productId = ?", id1, name, description, qty, id1);
+        if(status==0){
+            return Response.status(500).build();
+        }
+        else{
+            return Response.ok("http://localhost:8080/CPD-4414-Assignment-4/products/"+
+                        id,
+                        MediaType.TEXT_HTML).build(); 
+        }
     }
     
     @DELETE
