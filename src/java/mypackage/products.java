@@ -74,8 +74,13 @@ public class products {
     @DELETE
     @Path("{id}")
     @Consumes("application/json")
-    public void delete(@PathParam("id") String id) {
-        doUpdate("DELETE FROM PRODUCT WHERE productId = ?", id);
+    public Response delete(@PathParam("id") String id) {
+        if(doUpdate("DELETE FROM PRODUCT WHERE productId = ?", id)==0){
+            return Response.status(500).build();
+        }
+        else{
+            return Response.ok().build();
+        }
     }
     
     public int doUpdate(String query, String... params) {
