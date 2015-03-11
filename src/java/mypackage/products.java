@@ -109,7 +109,6 @@ public class products {
     }
 
     private String getResults(String query, String... params) {
-        StringBuilder sb = new StringBuilder();
         Boolean isSingle = false;
         JsonArrayBuilder jArray = Json.createArrayBuilder();
         try (Connection cn = Credentials.getConnection()) {
