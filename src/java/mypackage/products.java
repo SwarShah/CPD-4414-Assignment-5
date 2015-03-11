@@ -11,7 +11,9 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -107,9 +109,9 @@ public class products {
     }
 
     private String getResults(String query, String... params) {
-        JSONArray jArray = new JSONArray();
         StringBuilder sb = new StringBuilder();
         Boolean isSingle = false;
+        JsonArrayBuilder jArray = Json.createArrayBuilder();
         try (Connection cn = Credentials.getConnection()) {
             PreparedStatement pstmt = cn.prepareStatement(query);
             for (int i = 1; i <= params.length; i++) {
@@ -119,12 +121,12 @@ public class products {
             ResultSet rs = pstmt.executeQuery();
             if (isSingle == false) {
                 while (rs.next()) {
-                    JSONObject json = new JSONObject();
-                    json.put("productId", rs.getInt("productId"));
-                    json.put("name", rs.getString("name"));
-                    json.put("description", rs.getString("description"));
-                    json.put("quantity", rs.getInt("quantity"));
-                    jArray.add(json);
+                    JsonObjectBuilder productBuilder = Json.createObjectBuilder();
+                    productBuilder.add("productId", rs.getInt("productId"))
+                            .add("name", rs.getString("name"))
+                            .add("description", rs.getString("description"))
+                            .add("quantity", rs.getInt("quantity"));
+                    jArray.add(productBuilder);
                 }
             } else {
                 while (rs.next()) {
@@ -140,7 +142,7 @@ public class products {
         } catch (SQLException ex) {
             Logger.getLogger(products.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return jArray.toJSONString();
+        return jArray.build().toString();
     }
 
 }
